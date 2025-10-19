@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Y9M.W1.1 – Algebra Fundamentals | Jando EDU</title>
+  <title>Algebra Fundamentals | Jando EDU</title>
   <link rel="stylesheet" href="shared-styles.css">
   <link rel="stylesheet" href="loading-component.css">
   <link rel="stylesheet" href="auth-component.css">
@@ -526,6 +526,7 @@
     let currentQuestionIndex = 0;
     let score = 0;
     let userAnswers = [];
+    let submittedTextAnswers = []; // Track which text questions have been submitted
     let gameCompleted = false;
 
     // 🐾 All animals for rewards
@@ -933,11 +934,17 @@
         updateTextAnswer();
         checkAnswer();
         
+        // Mark this text question as submitted
+        submittedTextAnswers[currentQuestionIndex] = true;
+        
         // Show feedback immediately and enable navigation
         const feedback = document.getElementById('feedback');
         if (feedback) {
           feedback.style.display = 'block';
         }
+        
+        // Update navigation buttons to enable next button
+        updateNavigationButtons();
         
         // Ensure feedback is generated for text responses
         const question = questions[currentQuestionIndex];
@@ -1018,11 +1025,19 @@
       prevBtn.disabled = currentQuestionIndex === 0;
       
       const hasAnswer = userAnswers[currentQuestionIndex] !== undefined && userAnswers[currentQuestionIndex] !== '';
-      nextBtn.disabled = !hasAnswer;
+      const currentQuestion = questions[currentQuestionIndex];
+      
+      // For text questions, require both answer AND submission before enabling next
+      let canProceed = hasAnswer;
+      if (currentQuestion && currentQuestion.type === 'text-response') {
+        canProceed = hasAnswer && submittedTextAnswers[currentQuestionIndex] === true;
+      }
+      
+      nextBtn.disabled = !canProceed;
       
       if (currentQuestionIndex === questions.length - 1) {
         nextBtn.style.display = 'none';
-        submitBtn.style.display = hasAnswer ? 'inline-block' : 'none';
+        submitBtn.style.display = canProceed ? 'inline-block' : 'none';
       } else {
         nextBtn.style.display = 'inline-block';
         submitBtn.style.display = 'none';
@@ -1367,6 +1382,7 @@
       currentQuestionIndex = 0;
       score = 0;
       userAnswers = [];
+      submittedTextAnswers = [];
       gameCompleted = false;
       
       document.getElementById('questionArea').style.display = 'block';
